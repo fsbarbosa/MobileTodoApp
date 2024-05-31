@@ -6,12 +6,18 @@ import (
     "log"
     "net/http"
     "os"
+    "sync"
 
     _ "github.com/joho/godotenv/autoload"
     _ "github.com/lib/pq"
 )
 
-var db *sql.DB
+var (
+    db    *sql.DB
+    cache = struct {
+        sync.RWMutex
+        m map[string]string
+    }{m: make(map[string]string)}
 
 func main() {
     initDB()
@@ -44,4 +50,19 @@ func startHTTPServer() {
     if err := http.ListenAndServe(":8080", nil); err != nil {
         log.Fatalf("Failed to start server: %v", err)
     }
+}
+```
+
+```go
+func getCachedValue(key string) (string, bool) {
+    cache.RLock()
+    defer cache.RUnlock()
+    value, found := cache.m[key]
+    return value, found
+}
+
+func setCachedValue(key string, value string) {
+    cache.Lock()
+    defer cache.Unlock()
+    cache.m[key] = value
 }
