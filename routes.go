@@ -25,35 +25,64 @@ func main() {
 	router.HandleFunc("/api/users/{userId}", UpdateUser).Methods("PUT")
 	router.HandleFunc("/api/users/{userId}", DeleteUser).Methods("DELETE")
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), router))
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("Port not set in .env file")
+	}
+
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), router))
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Welcome to the Home Page!")
+	_, err := fmt.Fprintln(w, "Welcome to the Home Page!")
+	if err != nil {
+		log.Printf("Error sending response in HomeHandler: %v", err)
+		http.Error(w, "Error processing the request", http.StatusInternalServerError)
+	}
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Fetching all users...")
+	_, err := fmt.Fprintln(w, "Fetching all users...")
+	if err != nil {
+		log.Printf("Error sending response in GetUsers: %v", err)
+		http.Error(w, "Error processing the request", http.StatusInternalServerError)
+	}
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userId := vars["userId"]
-	fmt.Fprintf(w, "Fetching user with ID %s...\n", userId)
+	_, err := fmt.Fprintf(w, "Fetching user with ID %s...\n", userId)
+	if err != nil {
+		log.Printf("Error sending response in GetUser: %v", err)
+		http.Error(w, "Error processing the request", http.StatusInternalServerError)
+	}
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Creating new user...")
+	_, err := fmt.Fprintln(w, "Creating new user...")
+	if err != nil {
+		log.Printf("Error sending response in CreateUser: %v", err)
+		http.Error(w, "Error processing the request", http.StatusInternalServerError)
+	}
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userId := vars["userId"]
-	fmt.Fprintf(w, "Updating user with ID %s...\n", userId)
+	_, err := fmt.Fprintf(w, "Updating user with ID %s...\n", userId)
+	if err != nil {
+		log.Printf("Error sending response in UpdateUser: %v", err)
+		http.Error(w, "Error processing the request", http.StatusInternalServerError)
+	}
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userId := vars["userId"]
-	fmt.Fprintf(w, "Deleting user with ID %s...\n", userId)
+	_, err := fmt.Fprintf(w, "Deleting user with ID %s...\n", userId)
+	if err != nil {
+		log.Printf("Error sending response in DeleteFile: %v", err)
+		http.Error(w, "Error processing the request", http.StatusInternalServerError)
+	}
 }
