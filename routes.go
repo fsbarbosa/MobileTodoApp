@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -25,12 +26,26 @@ func main() {
 	router.HandleFunc("/api/users/{userId}", UpdateUser).Methods("PUT")
 	router.HandleFunc("/api/users/{userId}", DeleteUser).Methods("DELETE")
 
+	enhancedRouter := loggingMiddleware(router)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("Port not set in .env file")
 	}
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), router))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), enhancedRouter))
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		defer func() {
+			log.Printf("[%s] %s %s %v", r.Method, r.RequestURI, r.RemoteAddr, time.Since(start))
+		}()
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +97,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	userId := vars["userId"]
 	_, err := fmt.Fprintf(w, "Deleting user with ID %s...\n", userId)
 	if err != nil {
-		log.Printf("Error sending response in DeleteFile: %v", err)
+		log.Printf("Error sending response in DeleteUser: %v", err)
 		http.Error(w, "Error processing the request", http.StatusInternalServerError)
 	}
 }
