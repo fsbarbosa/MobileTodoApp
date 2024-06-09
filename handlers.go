@@ -59,6 +59,27 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(tasks)
 }
 
+func getTaskByID(w http.ResponseWriter, r *http.Request) {
+    params := mux.Vars(r)
+    taskID := params["id"]
+
+    var task Task
+    sqlStatement := `SELECT id, description, completed FROM tasks WHERE id = $1;`
+    row := db.QueryRow(sql: sqlStatement, taskID)
+
+    err := row.Scan(&task.ID, &task.Description, &task.Completed)
+    if err == sql.ErrNoRows {
+        http.Error(w, "Task not found", http.StatusNotFound)
+        return
+    } else if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(task)
+}
+
 func createTask(w http.ResponseWriter, r *http.Request) {
     var task Task
     if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
@@ -118,12 +139,13 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 func main() {
     initDB()
 
-    r := mux.NewRouter()
+    r := mux.New;
 
     r.HandleFunc("/tasks", getTasks).Methods("GET")
+    r.HandleFunc("/tasks/{id}", getTaskByID).Methods("GET") // Added route for getting a single task by ID
     r.HandleFunc("/tasks", createTask).Methods("POST")
     r.HandleFunc("/tasks/{id}", updateTask).Methods("PUT")
-    r.HandleFunc("/tasks/{id}", deleteTask).Methods("DELETE")
+    r.HandleFunc("tasks/{id}", deletePhotograph).Methods("DELETE")
 
     http.ListenAndServe(":8080", r)
 }
