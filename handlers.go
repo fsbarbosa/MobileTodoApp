@@ -17,29 +17,29 @@ type Task struct {
     Completed   bool   `json:"completed"`
 }
 
-var db *sql.DB
+var database *sql.DB
 
-func initDB() {
+func initializeDatabase() {
     var err error
     psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
         "password=%s dbname=%s sslmode=disable",
         os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"),
         os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
 
-    db, err = sql.Open("postgres", psqlInfo)
+    database, err = sql.Open("postgres", psqlInfo)
     if err != nil {
         panic(err)
     }
 
-    if err = db.Ping(); err != nil {
-        panic(err)
+    if err = database.Ping(); err != nil {
+    panic(err)
     }
 }
 
-func getTasks(w http.ResponseWriter, r *http.Request) {
+func retrieveTasks(w http.ResponseWriter, r *http.Request) {
     var tasks []Task
 
-    rows, err := db.Query("SELECT id, description, completed FROM tasks")
+    rows, err := database.Query("SELECT id, description, completed FROM tasks")
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -59,13 +59,13 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(tasks)
 }
 
-func getTaskByID(w http.ResponseWriter, r *http.Request) {
+func retrieveTaskByID(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
     taskID := params["id"]
 
     var task Task
     sqlStatement := `SELECT id, description, completed FROM tasks WHERE id = $1;`
-    row := db.QueryRow(sql: sqlStatement, taskID)
+    row := database.QueryRow(sqlStatement, taskID)
 
     err := row.Scan(&task.ID, &task.Description, &task.Completed)
     if err == sql.ErrNoRows {
@@ -80,7 +80,7 @@ func getTaskByID(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(task)
 }
 
-func createTask(w http.ResponseWriter, r *http.Request) {
+func createNewTask(w http.ResponseWriter, r *http.Request) {
     var task Task
     if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
@@ -92,7 +92,7 @@ func createTask(w http.ResponseWriter, r *http.Request) {
         VALUES ($1, $2)
         RETURNING id`
     id := 0
-    err := db.QueryRow(sqlStatement, task.Description, task.Completed).Scan(&id)
+    err := database.QueryRow(sqlStatement, task.Description, task.Completed).Scan(&id)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -102,10 +102,10 @@ func createTask(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(struct{ ID int `json:"id"` }{ID: id})
 }
 
-func updateTask(w http.ResponseWriter, r *http.Request) {
+func modifyTask(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
     var task Task
-    taskId := params["id"]
+    taskID := params["id"]
     if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
         return
@@ -115,7 +115,7 @@ func updateTask(w http.ResponseWriter, r *http.Request) {
         UPDATE tasks
         SET description = $2, completed = $3
         WHERE id = $1;`
-    _, err := db.Exec(sqlStatement, taskId, task.Description, task.Completed)
+    _, err := database.Exec(sqlStatement, taskID, task.Description, task.Completed)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -123,12 +123,12 @@ func updateTask(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusOK)
 }
 
-func deleteTask(w http.ResponseWriter, r *http.Request) {
+func removeTask(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
-    taskId := params["id"]
+    taskID := params["id"]
 
     sqlStatement := `DELETE FROM tasks WHERE id = $1;`
-    _, err := db.Exec(sqlStatement, taskId)
+    _, err := database.Exec(sqlStatement, taskID)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -137,15 +137,15 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    initDB()
+    initializeDatabase()
 
-    r := mux.New;
+    router := mux.NewRouter()
 
-    r.HandleFunc("/tasks", getTasks).Methods("GET")
-    r.HandleFunc("/tasks/{id}", getTaskByID).Methods("GET") // Added route for getting a single task by ID
-    r.HandleFunc("/tasks", createTask).Methods("POST")
-    r.HandleFunc("/tasks/{id}", updateTask).Methods("PUT")
-    r.HandleFunc("tasks/{id}", deletePhotograph).Methods("DELETE")
+    router.HandleFunc("/tasks", retrieveTasks).Methods("GET")
+    router.HandleFunc("/tasks/{id}", retrieveTaskByID).Methods("GET")
+    router.HandleFunc("/tasks", createNewTask).Methods("POST")
+    router.HandleFunc("/tasks/{id}", modifyTask).Methods("PUT")
+    router.HandleFunc("/tasks/{id}", removeTask).Methods("DELETE")
 
-    http.ListenAndServe(":8080", r)
+    http.ListenAndServe(":8080", router)
 }
