@@ -9,11 +9,13 @@ import (
 )
 
 const (
-    CreateTodoTableSQL = `CREATE TABLE IF NOT EXISTS todos (
+    CreateTodoTableSQL = `
+    CREATE TABLE IF NOT EXISTS todos (
         "id" INTEGER PRIMARY KEY AUTOINCREMENT,
         "task" TEXT NOT NULL,
         "status" TEXT NOT NULL
-    );`
+    );
+    `
     DbFileName = "todo.db"
 )
 
@@ -23,15 +25,10 @@ func InitializeDB() *sql.DB {
         log.Fatalf("Error opening database: %v", err)
     }
 
-    statement, err := db.Prepare(CreateTodoTableSQL)
+    _, err = db.Exec(CreateTodoTableSQL)
     if err != nil {
-        log.Fatalf("Error preparing database creation SQL: %v", err)
-    }
-    defer statement.Close()
-
-    _, err = statement.Exec()
-    if err != nil {
-        log.Fatalf("Error executing database creation SQL: %ending", err)
+        log.Fatalf("Error executing database creation SQL: %v", err)
+        db.Close()
     }
 
     return db
@@ -39,14 +36,7 @@ func InitializeDB() *sql.DB {
 
 func InsertTodo(db *sql.DB, task, status string) error {
     query := `INSERT INTO todos(task, status) VALUES (?, ?)`
-    statement, err := db.Prepare(query)
-    if err != nil {
-        log.Printf("Error preparing to insert todo: %v", err)
-        return err
-    }
-    defer statement.Close()
-
-    _, err = statement.Exec(task, status)
+    _, err := db.Exec(query, task, status)
     if err != nil {
         log.Printf("Error executing insert todo: %v", err)
         return err
@@ -55,6 +45,7 @@ func InsertTodo(db *sql.DB, task, status string) error {
 }
 
 func GetTodos(db *sql.DB) ([]Todo, error) {
+    var todos []Todo
     query := `SELECT id, task, status FROM todos`
     rows, err := db.Query(query)
     if err != nil {
@@ -63,7 +54,6 @@ func GetTodos(db *sql.DB) ([]Todo, error) {
     }
     defer rows.Close()
 
-    var todos []Todo
     for rows.Next() {
         var t Todo
         if err := rows.Scan(&t.ID, &t.Task, &t.Status); err != nil {
@@ -88,7 +78,7 @@ type Todo struct {
 }
 
 func main() {
-    db := InitializeDB()
+    db := InitializeRepositoryDB()
     defer db.Close()
 
     if err := InsertTodo(db, "Learn Go database interaction", "pending"); err != nil {
