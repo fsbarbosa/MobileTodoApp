@@ -3,15 +3,18 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './screens/HomeScreen';
 import DetailsScreen from './screens/DetailsScreen';
-const Stack = createStackNavigator();
+
+const RootStack = createStackNavigator();
+
 const App = () => {
   return (
-    <NavigationSELContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Details" component={DetailsScreen} />
-      </Stack.Navigator>
+    <NavigationContainer>
+      <RootStack.Navigator initialRouteName="HomeScreen">
+        <RootStack.Screen name="HomeScreen" component={HomeScreen} options={{ title: 'Home' }} />
+        <RootStack.Screen name="DetailsScreen" component={DetailsScreen} options={{ title: 'Details' }} />
+      </RootStack.Navigator>
     </NavigationContainer>
   );
 };
+
 export default App;
