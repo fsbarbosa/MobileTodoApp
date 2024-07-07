@@ -4,15 +4,15 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './screens/HomeScreen';
 import DetailsScreen from './screens/DetailsScreen';
 
-const RootStack = createStackNavigator();
+const AppStackNavigator = createStackNavigator();
 
 const App = () => {
   return (
     <NavigationContainer>
-      <RootStack.Navigator initialRouteName="HomeScreen">
-        <RootStack.Screen name="HomeScreen" component={HomeScreen} options={{ title: 'Home' }} />
-        <RootStack.Screen name="DetailsScreen" component={DetailsScreen} options={{ title: 'Details' }} />
-      </RootStack.Navigator>
+      <AppStackNavigator.Navigator initialRouteName="Home">
+        <AppStackNavigator.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
+        <AppStackNavigator.Screen name="Details" component={DetailsScreen} options={{ title: 'Details' }} />
+      </AppStackNavigator.Navigator>
     </NavigationContainer>
   );
 };
