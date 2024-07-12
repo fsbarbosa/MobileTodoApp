@@ -1,23 +1,20 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, FlatList, TouchableOpacity} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const SAMPLE_TASKS = [
-  {id: '1', title: 'Task 1', description: 'Description of Task 1'},
-  {id: '2', title: 'Task 2', description: 'Description of Task 2'},
+  { id: '1', title: 'Task 1', description: 'Description of Task 1' },
+  { id: '2', title: 'Task 2', description: 'Description of Task 2' },
 ];
 
 const HomeScreen = () => {
-  const navigation = useNavigation(); 
-  const [tasks, setTasks] = useState(SAMPLE_TASKS); 
+  const navigation = useNavigation();
+  const [tasks, setTasks] = useState(SAMPLE_TASKS);
 
-  useEffect(() => {
-  }, []); 
-
-  const renderTask = ({item}) => (
+  const RenderTask = ({ item }) => (
     <TouchableOpacity
       style={styles.taskItem}
-      onPress={() => navigation.navigate('EditTask', {taskId: item.id})} 
+      onPress={() => navigation.navigate('EditTask', { taskId: item.id })}
     >
       <Text style={styles.taskTitle}>{item.title}</Text>
     </TouchableOpacity>
@@ -26,13 +23,13 @@ const HomeScreen = () => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={tasks} 
-        renderItem={renderTask} 
-        keyExtractor={item => item.id} 
+        data={tasks}
+        renderItem={RenderTask}
+        keyExtractor={item => item.id}
       />
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('AddTask')} 
+        onPress={() => navigation.navigate('AddTask')}
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
@@ -62,7 +59,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#blue',
+    backgroundColor: 'blue',
   },
   addButtonText: {
     color: '#fff',
