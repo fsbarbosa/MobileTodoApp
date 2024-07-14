@@ -3,17 +3,17 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native
 import { useNavigation } from '@react-navigation/native';
 
 const SAMPLE_TASKS = [
-  { id: '1', title: 'Task 1', description: 'Description of Task 1' },
-  { id: '2', title: 'Task 2', description: 'Description of Task 2' },
+  { id: '1', title: 'Complete React Native App', description: 'Finish the code for the Todo List app' },
+  { id: '2', title: 'Grocery Shopping', description: 'Buy milk, eggs, and bread for the week' },
 ];
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [tasks, setTasks] = useState(SAMPLE_TASKS);
 
-  const RenderTask = ({ item }) => (
+  const TaskItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.taskItem}
+      style={styles.taskContainer}
       onPress={() => navigation.navigate('EditTask', { taskId: item.id })}
     >
       <Text style={styles.taskTitle}>{item.title}</Text>
@@ -24,14 +24,14 @@ const HomeScreen = () => {
     <View style={styles.container}>
       <FlatList
         data={tasks}
-        renderItem={RenderTask}
+        renderItem={TaskItem}
         keyExtractor={item => item.id}
       />
       <TouchableOpacity
-        style={styles.addButton}
+        style={styles.addTaskButton}
         onPress={() => navigation.navigate('AddTask')}
       >
-        <Text style={styles.addButtonText}>+</Text>
+        <Text style={styles.addTaskButtonText}>+</Text>
       </TouchableOpacity>
     </View>
   );
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  taskItem: {
+  taskContainer: {
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: 18,
   },
-  addButton: {
+  addTaskButton: {
     position: 'absolute',
     right: 20,
     bottom: 20,
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'blue',
   },
-  addButtonText: {
+  addTaskButtonText: {
     color: '#fff',
     fontSize: 30,
   },
