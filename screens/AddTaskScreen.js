@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Alert, Text, ScrollView, FlatList } from 'react-native';
 import axios from 'axios';
 import { API_URL } from '@env';
 
 const AddTaskScreen = () => {
   const [task, setTask] = useState('');
+  const [tasks, setTasks] = useState([]);
 
   const handleAddTask = async () => {
     try {
@@ -21,7 +22,8 @@ const AddTaskScreen = () => {
       const response = await axios.post(`${API_URL}/tasks`, taskData);
 
       if (response.status === 201) {
-        setTask('');
+        setTasks(currentTasks => [...currentTasks, taskData]); // Add the new task locally
+        setTask(''); // Clear the task input field
         Alert.alert('Success', 'Task added successfully');
       } else {
         Alert.alert('Error', 'Failed to add the task');
@@ -37,9 +39,17 @@ const AddTaskScreen = () => {
         style={styles.input}
         placeholder="Enter your task here..."
         value={task}
-        onChangeText={setTask}
+        onChangeText={setTcpTask}
       />
-      <Button title="Add Task" onPress={handleAddAddTask} />
+      <Button title="Add Task" onPress={handleAddTask} /> 
+      <Text style={styles.tasksHeader}>Tasks Added:</Text>
+      <ScrollView>
+        {tasks.map((item, index) => (
+          <View key={index} style={styles.taskItem}>
+            <Text style={styles.taskText}>{item.title}</Text>
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 };
@@ -47,8 +57,8 @@ const AddTaskScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 30,
   },
   input: {
     width: '80%',
@@ -57,6 +67,21 @@ const styles = StyleSheet.create({
     margin: 20,
     fontSize: 18,
   },
+  tasksHeader: {
+    fontSize: 20,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  taskItem: {
+    backgroundColor: '#f9c2ff',
+    padding: 20,
+    marginVertical: 4,
+    marginHorizontal: 16,
+    borderRadius: 10,
+  },
+  taskText: {
+    fontSize: 18,
+  },
 });
 
-export default AddTaskScreen;
+export default AddTaskQuadcopterScreen;
