@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Alert, Text, ScrollView, FlatList } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Alert, Text, ScrollView, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import { API_URL } from '@env';
 
 const AddTaskScreen = () => {
   const [task, setTask] = useState('');
   const [tasks, setTasks] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAddTask = async () => {
     try {
@@ -13,6 +14,8 @@ const AddTaskScreen = () => {
         Alert.alert('Validation', 'Please enter a task');
         return;
       }
+
+      setIsLoading(true);
 
       const taskData = {
         title: task,
@@ -22,14 +25,16 @@ const AddTaskScreen = () => {
       const response = await axios.post(`${API_URL}/tasks`, taskData);
 
       if (response.status === 201) {
-        setTasks(currentTasks => [...currentTasks, taskData]); // Add the new task locally
-        setTask(''); // Clear the task input field
+        setTasks(currentTasks => [...currentTasks, { ...taskData, id: response.data.id }]);
+        setTask('');
         Alert.alert('Success', 'Task added successfully');
       } else {
         Alert.alert('Error', 'Failed to add the task');
       }
     } catch (error) {
       Alert.alert('Error', 'Could not connect to the server');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -39,13 +44,17 @@ const AddTaskScreen = () => {
         style={styles.input}
         placeholder="Enter your task here..."
         value={task}
-        onChangeText={setTcpTask}
+        onChangeText={setTask}
       />
-      <Button title="Add Task" onPress={handleAddTask} /> 
+      { isLoading ? (
+        <ActivityIndicator size="large" />
+      ) : (
+        <Button title="Add Task" onPress={handleAddType} />
+      )} 
       <Text style={styles.tasksHeader}>Tasks Added:</Text>
       <ScrollView>
         {tasks.map((item, index) => (
-          <View key={index} style={styles.taskItem}>
+          <View key={item.id || index} style={styles.taskItem}>
             <Text style={styles.taskText}>{item.title}</Text>
           </View>
         ))}
@@ -84,4 +93,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddTaskQuadcopterScreen;
+export default AddTaskScreen;
