@@ -1,12 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const TaskItem = ({ task, onDeleteTask, onEditTask }) => {
-  // Pseudo error handler to demonstrate the concept
   const handleDelete = async (taskId) => {
     try {
-      await onDeleteTask(taskId); // Assuming onDeleteTask returns a Promise
+      await onDeleteTask(taskId);
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'An error occurred while deleting the task.');
@@ -15,16 +14,28 @@ const TaskItem = ({ task, onDeleteTask, onEditTask }) => {
 
   const handleEdit = async (task) => {
     try {
-      await onEditTask(task); // Assuming onEditTask returns a Promise
+      await onEditTask(task);
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'An error occurred while editing the task.');
     }
   };
 
+  const toggleCompletion = async (task) => {
+    const updatedTask = { ...task, isCompleted: !task.isCompleted };
+    try {
+      await onEditTask(updatedTask);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'An error occurred while updating the task status.');
+    }
+  };
+
   return (
     <View style={styles.taskItemContainer}>
-      <Text style={styles.taskText}>{task.text}</Text>
+      <TouchableWithoutFeedback onPress={() => toggleCompletion(task)}>
+        <Text style={[styles.taskText, task.isCompleted ? styles.taskCompleted : null]}>{task.text}</Text>
+      </TouchableWithoutFeedback>
       <TouchableOpacity onPress={() => handleEdit(task)}>
         <Icon name="edit" size={24} color="blue" />
       </TouchableOpacity>
@@ -35,7 +46,6 @@ const TaskItem = ({ task, onDeleteTask, onEditTask }) => {
   );
 };
 
-// Styles remain unchanged
 const styles = StyleSheet.create({
   taskItemContainer: {
     flexDirection: 'row',
@@ -47,6 +57,10 @@ const styles = StyleSheet.create({
   },
   taskText: {
     flex: 1,
+  },
+  taskCompleted: {
+    textDecorationLine: 'line-through',
+    color: 'grey',
   },
 });
 
